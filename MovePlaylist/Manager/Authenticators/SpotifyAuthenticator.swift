@@ -205,12 +205,7 @@ class SpotifyAuthenticator{
         sessionWithFreshToken { success in
             if success {
                 let baseURL = self.baseURLPlaylists
-                var components = URLComponents(string: baseURL)!
-                components.queryItems = [
-                    URLQueryItem(name: "limit", value: "2")
-                ]
-                var request = URLRequest(url: components.url!)
-                request.httpMethod = "GET"
+                var request = self.getRequest(urlString: baseURL)!
                 guard let access_token = SpotifyManager.shared.user?.accessToken?.access_token else{
                     completion(false, nil)
                     return
@@ -222,9 +217,19 @@ class SpotifyAuthenticator{
                         return
                     }
                     do{
-                        var jsonData: SpotifyPlaylists? = try JSONDecoder().decode(SpotifyPlaylists.self, from: data)
-                        completion(true, jsonData)
-                        
+                        var jsonData = try JSONDecoder().decode(SpotifyPlaylists.self, from: data)
+                        if(jsonData.next != nil){
+                            self.fetchNextPlaylist(urlString: (jsonData.next!)){success, data in
+                                if success{
+                                    jsonData.items.append(contentsOf: data!.items)
+                                    completion(true, jsonData)
+                                    return
+                                }
+                            }
+                        }else{
+                            completion(true, jsonData)
+                            return
+                        }
                     }
                     catch{
                         print(error)
@@ -248,20 +253,42 @@ class SpotifyAuthenticator{
         return request
     }
     
-     func fetchNextPlaylist(urlString:String) async throws -> SpotifyPlaylists?{
+    private func fetchNextPlaylist(urlString:String, completion: @escaping(Bool, SpotifyPlaylists?) -> Void){
         //no need to refresh token as it will be excuted consecutively with the other fetch functions
         var request = URLRequest(url: URL(string: urlString)!)
         request.httpMethod = "GET"
         guard let access_token = SpotifyManager.shared.user?.accessToken?.access_token else{
-            return nil
+            completion(false, nil)
+            return
         }
         request.setValue("Bearer \(access_token)", forHTTPHeaderField: "Authorization")
-        let (data, _) = try await URLSession.shared.data(for: request)
-        var result = try JSONDecoder().decode(SpotifyPlaylists.self, from: data)
-        if (result.next != nil){
-            await result.items.append(contentsOf: (try self.fetchNextPlaylist(urlString: result.next!)?.items)!)
+        
+        let task = URLSession.shared.dataTask(with: request){ data, response, errortr in
+            guard let data = data, errortr == nil else{
+                completion(false, nil)
+                return
+            }
+            do{
+                var result = try JSONDecoder().decode(SpotifyPlaylists.self, from: data)
+                
+                if(result.next != nil){
+                    self.fetchNextPlaylist(urlString: result.next!){success, data in
+                        if success {
+                            result.items.append(contentsOf: data!.items)
+                            completion(true, result)
+                            return
+                        }
+                    }
+                }else{
+                    completion(true, result)
+                    return
+                }
+            }
+            catch{
+                print(error)
+            }
         }
-        return result
+        task.resume()
     }
     
     func fetchPlaylistItems(id:String, completion: @escaping((Bool, SpotifyPlaylistItems?)->Void)){
@@ -280,8 +307,19 @@ class SpotifyAuthenticator{
                         return
                     }
                     do{
-                        let jsonData = try JSONDecoder().decode(SpotifyPlaylistItems.self, from: data)
-                        completion(true, jsonData)
+                        var jsonData = try JSONDecoder().decode(SpotifyPlaylistItems.self, from: data)
+                        if(jsonData.next != nil){
+                            self.fetchNextPlaylistItems(urlString: (jsonData.next!)){success, data in
+                                if success{
+                                    jsonData.items.append(contentsOf: data!.items)
+                                    completion(true, jsonData)
+                                    return
+                                }
+                            }
+                        }else{
+                            completion(true, jsonData)
+                            return
+                        }
                         
                     }
                     catch{
@@ -291,6 +329,44 @@ class SpotifyAuthenticator{
                 task.resume()
             }
         }
+    }
+    
+    private func fetchNextPlaylistItems(urlString:String, completion: @escaping(Bool, SpotifyPlaylistItems?) -> Void){
+        //no need to refresh token as it will be excuted consecutively with the other fetch functions
+        var request = URLRequest(url: URL(string: urlString)!)
+        request.httpMethod = "GET"
+        guard let access_token = SpotifyManager.shared.user?.accessToken?.access_token else{
+            completion(false, nil)
+            return
+        }
+        request.setValue("Bearer \(access_token)", forHTTPHeaderField: "Authorization")
+        
+        let task = URLSession.shared.dataTask(with: request){ data, response, errortr in
+            guard let data = data, errortr == nil else{
+                completion(false, nil)
+                return
+            }
+            do{
+                var result = try JSONDecoder().decode(SpotifyPlaylistItems.self, from: data)
+                
+                if(result.next != nil){
+                    self.fetchNextPlaylistItems(urlString: result.next!){success, data in
+                        if success {
+                            result.items.append(contentsOf: data!.items)
+                            completion(true, result)
+                            return
+                        }
+                    }
+                }else{
+                    completion(true, result)
+                    return
+                }
+            }
+            catch{
+                print(error)
+            }
+        }
+        task.resume()
     }
     
 }
