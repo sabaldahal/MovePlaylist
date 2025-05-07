@@ -14,40 +14,61 @@ struct MoveTarget: View {
     @State var isPresentWebView = false
     @State var changeTarget = false
     @State var authSuccess = false
-    @State var movingFromSource = true
-    @State var showPlaylists = false
+    var movingFromSource:Bool
     var body: some View {
         NavigationStack{
-            NavigationLink(destination: PlaylistsView(), isActive: $showPlaylists)
-            {}
+           // NavigationLink(destination: PlaylistsView(), isActive: $showPlaylists)
+            //{}
             VStack{
                 Spacer()
-                if let source = srcdest.source{
-                        ServiceSelectionRow(image: source.rawValue)
-                            .onTapGesture {
-                                movingFromSource = true
-                                changeTarget.toggle()
-                            }
-                    Button("Show Playlists"){
-                        dataVM.fetchPlaylists(source)
-                        self.showPlaylists.toggle()
+                switch movingFromSource{
+                case true:
+                    Text("Select Source")
+                        .font(.title2)
+                        .padding()
+                    ServiceSelectionRow(image: srcdest.source?.rawValue)
+                        .onTapGesture {
+                            changeTarget.toggle()
+                        }
+                    Spacer()
+                    NavigationLink {
+                        MoveTarget(movingFromSource: false)
+                    } label: {
+                        Text("Select Destination")
+                            .padding()
+                            .padding(.horizontal, 25)
+                            .background(.gray)
+                            .cornerRadius(10)
+                            .padding()
                     }
-                        
-                        
+                default:
+                    Text("Select Destination")
+                        .font(.title2)
+                        .padding()
+                    ServiceSelectionRow(image: srcdest.destination?.rawValue)
+                        .onTapGesture {
+                            changeTarget.toggle()
+                        }
+                    Spacer()
+                    NavigationLink {
+                        PlaylistsView().onAppear{
+                            dataVM.fetchPlaylists(srcdest.source!)
+                        }
+                    } label: {
+                        Text("Select Playlists")
+                            .padding()
+                            .padding(.horizontal, 25)
+                            .background(.gray)
+                            .cornerRadius(10)
+                            .padding()
+                    }
                 }
-                Spacer()
 
 
-                ServiceSelectionRow(image: srcdest.destination?.rawValue)
-                                .onTapGesture {
-                                    movingFromSource = false
-                                    changeTarget.toggle()
-                                }
-                
                 Spacer()
             }
             .sheet(isPresented: $changeTarget){
-                MoveMenu(authViewModel: authViewModel, srcdest: srcdest, showWebView: $isPresentWebView, movingFromSource: $movingFromSource)
+                MoveMenu(authViewModel: authViewModel, srcdest: srcdest, showWebView: $isPresentWebView, movingFromSource: movingFromSource)
                     .presentationDetents([.fraction(0.35)])
             }
             .sheet(isPresented: $isPresentWebView,
@@ -67,7 +88,7 @@ struct MoveTarget: View {
 
 struct MoveTarget_Previews: PreviewProvider {
     static var previews: some View {
-        MoveTarget()
+        MoveTarget(movingFromSource: true)
             .environmentObject(SourceDestination(.spotify, .youtube))
             .environmentObject(AuthenticationViewModel())
             .environmentObject(DataViewModel())

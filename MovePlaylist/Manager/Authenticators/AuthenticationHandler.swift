@@ -9,7 +9,11 @@ import Foundation
 
 class AuthenticationHandler{
     
-    init(){}
+    init(authViewModel: AuthenticationViewModel){
+        self.authViewModel = authViewModel
+    }
+    
+    var authViewModel:AuthenticationViewModel
     
     func authenticate(musicService: MusicServices){
         switch musicService{
@@ -25,15 +29,29 @@ class AuthenticationHandler{
     }
     
     func handleSpotifyAuthentication(){
-        SpotifyManager.shared.authenticator.Authenticate()
+        SpotifyManager.shared.authenticator.Authenticate(){ success in
+            if success{
+                self.authViewModel.musicServicesState.spotify = .signedIn
+            }else{
+                self.authViewModel.musicServicesState.spotify = .signedOut
+            }
+            
+        }
     }
     
     func handleYoutubeAuthentication(){
         YoutubeManager.shared.signIn(){
             success in
+            if success {
 
+                self.authViewModel.musicServicesState.youtube = .signedIn
+            }else{
+                self.authViewModel.musicServicesState.youtube = .signedOut
+            }
         }
 
     }
+    
+    
     
 }

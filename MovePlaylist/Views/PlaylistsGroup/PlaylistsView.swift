@@ -38,6 +38,7 @@ struct PlaylistsView_Previews: PreviewProvider {
         PlaylistsView()
             .environmentObject(SourceDestination())
             .environmentObject(DataViewModel())
+            .preferredColorScheme(.dark)
     }
 }
 

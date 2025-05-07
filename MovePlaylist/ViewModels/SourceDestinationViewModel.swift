@@ -11,6 +11,7 @@ import Foundation
 class SourceDestination: ObservableObject{
     @Published var source:MusicServices?
     @Published var destination:MusicServices?
+    @Published var workingOn:MusicServices?
     
     init(){}
     init(_ source:MusicServices, _ destination:MusicServices){
@@ -21,12 +22,6 @@ class SourceDestination: ObservableObject{
         self.source = source
     }
 
-    func workingOn() -> MusicServices{
-        if destination == nil {
-            return source!
-        }
-        return destination!
-    }
     
 
 }

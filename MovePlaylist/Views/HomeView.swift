@@ -35,7 +35,7 @@ struct HomeView: View {
                     
                 //display options for the music services
                     .sheet(isPresented: $startMoving){
-                        MoveMenu(authViewModel: authViewModel, srcdest: srcdest, showWebView: $isPresentWebView, movingFromSource: .constant(true))
+                        MoveMenu(authViewModel: authViewModel, srcdest: srcdest, showWebView: $isPresentWebView, movingFromSource: true)
                             .presentationDetents([.fraction(0.35)])
                     }
                 //open up web view for spotify to log in
@@ -51,7 +51,7 @@ struct HomeView: View {
                     }
                 }else {
                     NavigationStack{
-                        MoveTarget()
+                        MoveTarget(movingFromSource: true)
         
                     }
                    

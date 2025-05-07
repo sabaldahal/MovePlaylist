@@ -9,8 +9,12 @@ import SwiftUI
 
 struct Settings: View {
     var body: some View {
-        NavigationStack{
-
+        VStack{
+            Text("Configurations")
+            VStack{
+                ConnectedServices(musicService: .spotify)
+                ConnectedServices(musicService: .youtube)
+            }
         }
     }
 }

@@ -13,6 +13,7 @@ class DataViewModel: ObservableObject{
     init(){}
     @Published var sourceData:[AnyPlaylist]?
     @Published var sourcePlaylistItems:[AnyPlaylist]?
+    var loadNextStatus = LoadStatus.ready
     
     func addToCache(url:URL?) async {
        guard let url = url else{
@@ -101,4 +102,41 @@ class DataViewModel: ObservableObject{
     }
     
     
+}
+
+extension DataViewModel{
+    
+    func loadMorePlaylists(){
+        
+    }
+    
+    func loadMorePlaylistItems(currentItem: AnyPlaylist, type:MusicServices?){
+        guard let type = type else{
+            return
+        }
+        if !shouldLoadMorePlaylistItems(currentItem: currentItem){
+            return
+        }
+        self.loadNextStatus = .loading
+        
+    }
+    
+    func shouldLoadMorePlaylistItems(currentItem: AnyPlaylist) -> Bool{
+        if sourcePlaylistItems == nil || sourcePlaylistItems!.count < 20 {return false}
+        for n in (sourcePlaylistItems!.count - 10) ... (sourcePlaylistItems!.count - 1){
+            if n  > 0 && currentItem.id == sourcePlaylistItems![n].id{
+                return true
+            }
+        }
+        return false
+    }
+}
+
+extension DataViewModel{
+    enum LoadStatus {
+        case ready
+        case loading
+        case error
+        case done
+    }
 }

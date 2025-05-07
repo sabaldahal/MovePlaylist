@@ -21,6 +21,7 @@ struct AnyPlaylist: Identifiable, Hashable{
     let id:String
     let title:String
     let thumbnail:URL?
+    var isSelected:Bool = false
     
     init(_ playlist: any Playlist){
         self.id = playlist.id

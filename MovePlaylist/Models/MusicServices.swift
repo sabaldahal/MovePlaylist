@@ -16,7 +16,7 @@ enum MusicServices: String, CaseIterable{
     case amazonmusic
 }
 
-struct MusicServicesState{
+class MusicServicesState{
     
     init(){
         spotify = .signedOut

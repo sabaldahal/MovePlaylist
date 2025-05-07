@@ -13,6 +13,7 @@ struct MovePlaylistApp: App {
     @StateObject var srcdest = SourceDestination()
     @StateObject var authViewModel = AuthenticationViewModel()
     @StateObject var dataVM = DataViewModel()
+    @StateObject var test = Testy()
     
     var body: some Scene {
         WindowGroup {
@@ -21,6 +22,7 @@ struct MovePlaylistApp: App {
                 .environmentObject(srcdest)
                 .environmentObject(authViewModel)
                 .environmentObject(dataVM)
+                .environmentObject(test)
             
                 .onAppear{
                     //restore previously saved logins

@@ -9,11 +9,11 @@ import SwiftUI
 import GoogleSignInSwift
 
 struct MoveMenu: View {
-    @Environment (\.dismiss) var dismiss
+    @Environment(\.dismiss) var dismiss
     @ObservedObject var authViewModel:AuthenticationViewModel
     @ObservedObject var srcdest:SourceDestination
     @Binding var showWebView:Bool
-    @Binding var movingFromSource:Bool
+    var movingFromSource:Bool
 
     var body: some View {
         NavigationView{
@@ -75,7 +75,7 @@ struct MoveMenu: View {
 
 struct MoveMenu_Previews: PreviewProvider {
     static var previews: some View {
-        MoveMenu(authViewModel: AuthenticationViewModel(), srcdest: SourceDestination(), showWebView: .constant(false), movingFromSource: .constant(false))
+        MoveMenu(authViewModel: AuthenticationViewModel(), srcdest: SourceDestination(), showWebView: .constant(false), movingFromSource: false)
             .preferredColorScheme(.dark)
     }
 }

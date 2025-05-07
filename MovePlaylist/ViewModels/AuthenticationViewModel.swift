@@ -8,12 +8,12 @@
 import Foundation
 import GoogleSignIn
 
-@MainActor
+//@MainActor
 class AuthenticationViewModel: ObservableObject{
     
     init(){
-        
         self.musicServicesState = MusicServicesState()
+        
         //youtube
         if GIDSignIn.sharedInstance.currentUser != nil {
             musicServicesState.youtube = .signedIn
@@ -30,7 +30,7 @@ class AuthenticationViewModel: ObservableObject{
     }
     
     @Published var musicServicesState:MusicServicesState
-    var authenticator = AuthenticationHandler()
+    var authenticator:AuthenticationHandler { return AuthenticationHandler(authViewModel: self) }
     
     func getStateOf(type:MusicServices) -> SignInState{
         switch type{
@@ -40,6 +40,17 @@ class AuthenticationViewModel: ObservableObject{
             return self.musicServicesState.youtube
         default:
             return .signedOut
+        }
+    }
+    
+    func disconnect(_ musicService:MusicServices){
+        switch musicService{
+        case .spotify:
+            SpotifyManager.shared.disconnect()
+        case .youtube:
+            YoutubeManager.shared.disconnect()
+        default:
+            return
         }
     }
     

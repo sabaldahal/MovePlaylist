@@ -55,9 +55,10 @@ class SpotifyAuthenticator{
         return
     }
            
-    func Authenticate(){
+    func Authenticate(completion: @escaping(Bool) -> Void){
         guard let authCode = SpotifyManager.shared.user?.authorizationCode else{
         print("No authorization Code provided for authentication")
+        completion(false)
         return
     }
         getAccessToken(baseURL: SpotifyManager.Constants.AUTHENTICATE_BASE_URL, authCode: authCode, redirectURI: SpotifyManager.Constants.REDIRECT_URI, clientId: SpotifyManager.Constants.CLIENT_ID, clientSecret: SpotifyManager.Constants.CLIENT_SECRET){
@@ -65,7 +66,11 @@ class SpotifyAuthenticator{
         if success {
             SpotifyManager.shared.user?.accessToken = token
             self.saveTokenToKeyChain(token!)
+            completion(true)
+            return
         }
+        completion(false)
+            return
     }
 }
     
@@ -295,7 +300,7 @@ class SpotifyAuthenticator{
         sessionWithFreshToken { success in
             if success {
                 let baseURL = "https://api.spotify.com/v1/playlists/\(id)/tracks"
-                var request = self.getRequest(urlString: baseURL)
+                let request = self.getRequest(urlString: baseURL)
                 guard let access_token = SpotifyManager.shared.user?.accessToken?.access_token, var request = request else{
                     completion(false, nil)
                     return
